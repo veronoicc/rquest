@@ -412,7 +412,7 @@ mod connect;
 #[cfg(feature = "cookies")]
 pub mod cookie;
 pub mod dns;
-mod proxy;
+pub mod proxy;
 pub mod redirect;
 
 mod http2;
