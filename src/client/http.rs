@@ -1510,6 +1510,29 @@ impl Client {
         }
     }
 
+    /// Injects a 'Cookie' into the 'CookieStore' for the specified URL.
+    ///
+    /// This method accepts a collection of cookies, which can be either an owned
+    /// vector (`Vec<HeaderValue>`) or a reference to a slice (`&[HeaderValue]`).
+    /// It will convert the collection into an iterator and pass it to the
+    /// `cookie_store` for processing.
+    ///
+    /// # Parameters
+    /// - `url`: The URL associated with the cookies to be set.
+    /// - `cookies`: A collection of `HeaderValue` items, either by reference or owned.
+    ///
+    /// This method forces the cookies to be set, even if the collection is empty.
+    #[cfg(feature = "cookies")]
+    pub fn set_cookies_forced<C>(&self, url: &Url, cookies: C)
+    where
+        C: AsRef<[HeaderValue]>,
+    {
+        if let Some(ref cookie_store) = self.inner.cookie_store {
+            let mut cookies = cookies.as_ref().iter().peekable();
+            cookie_store.set_cookies(&mut cookies, url);
+        }
+    }
+
     /// Injects a 'Cookie' into the 'CookieStore' for the specified URL, using references to `HeaderValue`.
     ///
     /// This method accepts a collection of cookies by reference, which can be either a slice (`&[&'a HeaderValue]`).
@@ -1532,6 +1555,27 @@ impl Client {
             if cookies.peek().is_some() {
                 cookie_store.set_cookies(&mut cookies, url);
             }
+        }
+    }
+
+    /// Injects a 'Cookie' into the 'CookieStore' for the specified URL, using references to `HeaderValue`.
+    /// This method accepts a collection of cookies by reference, which can be either a slice (`&[&'a HeaderValue]`).
+    /// It will map each reference to the value of `HeaderValue` and pass the resulting iterator to the `cookie_store`
+    /// for processing.
+    ///
+    /// # Parameters
+    /// - `url`: The URL associated with the cookies to be set.
+    /// - `cookies`: A collection of references to `HeaderValue` items.
+    ///
+    /// This method forces the cookies to be set, even if the collection is empty.
+    #[cfg(feature = "cookies")]
+    pub fn set_cookies_forced_by_ref<'a, C>(&self, url: &Url, cookies: C)
+    where
+        C: AsRef<[&'a HeaderValue]>,
+    {
+        if let Some(ref cookie_store) = self.inner.cookie_store {
+            let mut cookies = cookies.as_ref().iter().copied().peekable();
+            cookie_store.set_cookies(&mut cookies, url);
         }
     }
 
